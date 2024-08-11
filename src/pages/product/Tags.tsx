@@ -6,14 +6,17 @@ import { TextField } from "@/components/login/TextField";
 import { useState } from "react";
 import Search from "@/assets/icons/search.svg?react";
 import Pagination from "@/components/ui-kit/Pagination";
-import { Checkbox } from '@headlessui/react';
+import { Checkbox } from "@headlessui/react";
 import ModalSKeleton from "@/components/ui-kit/ModalSkeleton";
 
 const Tags = () => {
-  const [search, setSearch] = useState<string | null>(null);
+  const [search, setSearch] = useState<string | null>("");
   const [page, setPage] = useState(1);
-  const [checkedTags, setCheckedTags] = useState<{ [key: number]: boolean }>({});
-  const [modalEdit, setModalEdit] = useState<boolean>(false);
+  const [checkedTags, setCheckedTags] = useState<{ [key: number]: boolean }>(
+    {}
+  );
+  const [modalEdit, setModalEdit] = useState<string>("");
+  const [modalAdd, setModalAdd] = useState<boolean>(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -24,21 +27,20 @@ const Tags = () => {
       ...prev,
       [id]: !prev[id],
     }));
+    console.log("setCheckedTags:",setCheckedTags)
   };
 
   const handleEditClick = () => {
-    // Count the number of checked checkboxes
     const checkedCount = Object.values(checkedTags).filter(Boolean).length;
-
+    const tagId = Object.keys(checkedTags).pop();
     if (checkedCount === 1) {
-      setModalEdit(true);
-    } else {
-      // Optionally, provide feedback if needed
-      console.log("Please select exactly one checkbox.");
+      
+   
+      setModalEdit(tagId);
     }
   };
 
-  // Determine if exactly one checkbox is checked
+const handleChangeNewTag =()=>(console.log('add'))
   const isOneChecked = Object.values(checkedTags).filter(Boolean).length === 1;
 
   const data = {
@@ -64,7 +66,7 @@ const Tags = () => {
 
   return (
     <div>
-      <PrimaryButtons>
+      <PrimaryButtons onClick={() => setModalAdd(!modalAdd)}>
         <Plus width={20} height={20} />
         برچسب جدید
       </PrimaryButtons>
@@ -72,7 +74,7 @@ const Tags = () => {
         <div className="w-80 pb-4">
           <TextField
             id="addressName"
-            placeholder="جستجوی برچسب"
+            placeholder="جستجوی در برچسب ها"
             label=""
             onChange={handleChange}
             state={search}
@@ -87,8 +89,17 @@ const Tags = () => {
                 onChange={() => handleCheckboxChange(tag.id)}
                 className="group block size-4 rounded border bg-white data-[checked]:bg-blue-500"
               >
-                <svg className="stroke-white opacity-0 group-data-[checked]:opacity-100" viewBox="0 0 14 14" fill="none">
-                  <path d="M3 8L6 11L11 3.5" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                <svg
+                  className="stroke-white opacity-0 group-data-[checked]:opacity-100"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                >
+                  <path
+                    d="M3 8L6 11L11 3.5"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </Checkbox>
               <p className="pr-2">{tag.name}</p>
@@ -99,7 +110,9 @@ const Tags = () => {
           <Edit
             width={30}
             height={30}
-            className={`mx-2 cursor-pointer ${isOneChecked ? "" : "cursor-default opacity-50"}`}
+            className={`mx-2 cursor-pointer ${
+              isOneChecked ? "" : "cursor-default opacity-50"
+            }`}
             onClick={isOneChecked ? handleEditClick : undefined}
           />
           <Copy
@@ -118,11 +131,33 @@ const Tags = () => {
       </div>
       {modalEdit && (
         <ModalSKeleton
-          title="EDIT"
-          closeModal={() => setModalEdit(false)}
+          title="ویرایش"
+          closeModal={() => setModalEdit("")}
           isShow={modalEdit}
         >
-          modal
+          <TextField
+            id="editTag"
+            placeholder=""
+            label="ویرایش برچسب"
+            onChange={handleChangeNewTag}
+            state={data.tags.modalEdit}
+          />
+        </ModalSKeleton>
+      )}
+      {modalAdd && (
+        <ModalSKeleton
+          title="ایجاد برچسب جدید"
+          closeModal={() => setModalAdd(false)}
+          isShow={modalAdd}
+        >
+          <TextField
+            id="addTag"
+            placeholder="برچسب جدید"
+            label="برچسب جدید"
+            onChange={handleChangeNewTag}
+            state={modalAdd}
+            
+          />
         </ModalSKeleton>
       )}
     </div>
