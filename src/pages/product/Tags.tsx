@@ -1,13 +1,13 @@
+import { useState } from "react";
 import { PrimaryButtons } from "@/components/ui-kit/buttons/PrimaryButtons";
 import Plus from "@/assets/icons/plus.svg?react";
 import Copy from "@/assets/icons/copy.svg?react";
 import Edit from "@/assets/icons/edit.svg?react";
-import { TextField } from "@/components/login/TextField";
-import { useState } from "react";
 import Search from "@/assets/icons/search.svg?react";
 import Pagination from "@/components/ui-kit/Pagination";
 import { Checkbox } from "@headlessui/react";
 import ModalSKeleton from "@/components/ui-kit/ModalSkeleton";
+import { TextField } from "@/components/login/TextField";
 
 const Tags = () => {
   const [search, setSearch] = useState<string | null>("");
@@ -15,8 +15,10 @@ const Tags = () => {
   const [checkedTags, setCheckedTags] = useState<{ [key: number]: boolean }>(
     {}
   );
-  const [modalEdit, setModalEdit] = useState<string>("");
+  const [modalEdit, setModalEdit] = useState<string | null>(null);
   const [modalAdd, setModalAdd] = useState<boolean>(false);
+  const [newTag, setNewTag] = useState("");
+  const [editedTagName, setEditedTagName] = useState<string>("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -27,20 +29,35 @@ const Tags = () => {
       ...prev,
       [id]: !prev[id],
     }));
-    console.log("setCheckedTags:",setCheckedTags)
   };
 
   const handleEditClick = () => {
-    const checkedCount = Object.values(checkedTags).filter(Boolean).length;
-    const tagId = Object.keys(checkedTags).pop();
-    if (checkedCount === 1) {
-      
-   
+    const checkedTagIds = Object.keys(checkedTags).filter(
+      (id) => checkedTags[id]
+    );
+    if (checkedTagIds.length === 1) {
+      const tagId = checkedTagIds[0];
+      const tagName =
+        data.tags.find((tag) => tag.id === parseInt(tagId))?.name || "";
+      setEditedTagName(tagName);
       setModalEdit(tagId);
     }
   };
 
-const handleChangeNewTag =()=>(console.log('add'))
+  const handleSaveEdit = () => {
+    console.log("Edited Tag:", editedTagName);
+    setModalEdit(null); // Close the modal after saving
+  };
+
+  const handleChangeNewTag = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewTag(e.target.value);
+  };
+
+  const handleAddNewTag = () => {
+    console.log("New tag:", newTag);
+    setModalAdd(false);
+  };
+
   const isOneChecked = Object.values(checkedTags).filter(Boolean).length === 1;
 
   const data = {
@@ -66,11 +83,13 @@ const handleChangeNewTag =()=>(console.log('add'))
 
   return (
     <div>
-      <PrimaryButtons onClick={() => setModalAdd(!modalAdd)}>
-        <Plus width={20} height={20} />
-        برچسب جدید
-      </PrimaryButtons>
-      <div className="flex flex-col m-5 px-10 py-28 rounded shadow-md bg-slate-50 dark:bg-slate-700">
+      <div className="w-full flex justify-end">
+        <PrimaryButtons className="mb-4" onClick={() => setModalAdd(true)}>
+          <Plus className="w-6 h-6 ml-4" />
+          برچسب جدید
+        </PrimaryButtons>
+      </div>
+      <div className="p-4 rounded flex flex-col justify-between shadow-md bg-slate-50 dark:bg-slate-700  text-slate-700 dark:text-slate-300">
         <div className="w-80 pb-4">
           <TextField
             id="addressName"
@@ -110,15 +129,15 @@ const handleChangeNewTag =()=>(console.log('add'))
           <Edit
             width={30}
             height={30}
-            className={`mx-2 cursor-pointer ${
-              isOneChecked ? "" : "cursor-default opacity-50"
+            className={`mx-2  ${
+              isOneChecked ? "cursor-pointer" : "opacity-50"
             }`}
             onClick={isOneChecked ? handleEditClick : undefined}
           />
           <Copy
             width={30}
             height={30}
-            className="mx-2 cursor-pointer"
+            className="mx-2 opacity-50"
             onClick={() => console.log("copy")}
           />
         </div>
@@ -129,37 +148,46 @@ const handleChangeNewTag =()=>(console.log('add'))
           totalCount={data.pagination.total_items}
         />
       </div>
-      {modalEdit && (
-        <ModalSKeleton
-          title="ویرایش"
-          closeModal={() => setModalEdit("")}
-          isShow={modalEdit}
-        >
+
+      <ModalSKeleton
+        title="ویرایش برچسب"
+        closeModal={() => setModalEdit(null)}
+        isShow={modalEdit}
+      >
+        <div className="flex flex-col justify-center items-center gap-4">
           <TextField
             id="editTag"
             placeholder=""
-            label="ویرایش برچسب"
-            onChange={handleChangeNewTag}
-            state={data.tags.modalEdit}
+            label=""
+            onChange={(e) => setEditedTagName(e.target.value)}
+            state={editedTagName}
           />
-        </ModalSKeleton>
-      )}
-      {modalAdd && (
-        <ModalSKeleton
-          title="ایجاد برچسب جدید"
-          closeModal={() => setModalAdd(false)}
-          isShow={modalAdd}
-        >
+          <PrimaryButtons className="max-w-40" onClick={handleSaveEdit}>
+            <Plus width={20} height={20} />
+            اعمال تغییر
+          </PrimaryButtons>
+        </div>
+      </ModalSKeleton>
+
+      <ModalSKeleton
+        title="ایجاد برچسب جدید"
+        closeModal={() => setModalAdd(false)}
+        isShow={modalAdd}
+      >
+        <div className="flex flex-col justify-center items-center gap-4">
           <TextField
             id="addTag"
             placeholder="برچسب جدید"
-            label="برچسب جدید"
+            label=""
             onChange={handleChangeNewTag}
-            state={modalAdd}
-            
+            state={newTag}
           />
-        </ModalSKeleton>
-      )}
+          <PrimaryButtons className="max-w-40" onClick={handleAddNewTag}>
+            <Plus width={20} height={20} />
+            ایجاد برچسب جدید
+          </PrimaryButtons>
+        </div>
+      </ModalSKeleton>
     </div>
   );
 };
